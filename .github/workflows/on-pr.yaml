@@ -6,9 +6,9 @@ env:
   SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
 jobs:
-  application-assessment:
+  oss-assessment:
     permissions: write-all
-    name: Application Assessment
+    name: Open Source Assessment
     runs-on: ubuntu-22.04
     steps:
       - 
@@ -18,13 +18,33 @@ jobs:
         uses: snyk/actions/node@master
         continue-on-error: true # To make sure that SARIF upload gets called
         with:
-          args: ./src --sarif-file-output=oss-and-code-snyk.sarif
+          args: ./src --sarif-file-output=oss-snyk.sarif
       - 
         name: Upload result to GitHub Code Scanning
         uses: github/codeql-action/upload-sarif@v2
         with:
-          sarif_file: oss-and-code-snyk.sarif
-          category: oss-and-code
+          sarif_file: oss-snyk.sarif
+          category: oss
+  
+  code-assessment:
+    permissions: write-all
+    name: SAST Assessment
+    runs-on: ubuntu-22.04
+    steps:
+      - 
+        uses: actions/checkout@v3
+      -
+        uses: snyk/actions/setup@master
+      - 
+        name: Run Snyk to check for Static Application Security Testing Findings
+        run: snyk code test ./src --sarif-file-output=code-snyk.sarif
+        continue-on-error: true # To make sure that SARIF upload gets called
+      - 
+        name: Upload result to GitHub Code Scanning
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: code-snyk.sarif
+          category: code
       
   container-assessment:
     permissions: write-all
@@ -42,7 +62,7 @@ jobs:
       uses: snyk/actions/docker@master
       with:
         image: raphabot/hello:test
-        args: --file=/src/Dockerfile --sarif-file-output=container-snyk.sarif
+        args: --file=src/Dockerfile --sarif-file-output=container-snyk.sarif
     - 
       name: Upload result to GitHub Code Scanning
       uses: github/codeql-action/upload-sarif@v2
@@ -69,3 +89,23 @@ jobs:
         with:
           sarif_file: k8s-snyk.sarif
           category: k8s-artificat
+  
+  terraform-assessment:
+    permissions: write-all
+    name: Terraform Assessment
+    runs-on: ubuntu-latest
+    steps:
+      - 
+        uses: actions/checkout@v3
+      - 
+        name: Run Snyk to check AWS misconfigurations in Terraform IaC
+        continue-on-error: true # To make sure that SARIF upload gets called
+        uses: snyk/actions/iac@master 
+        with:
+          args: cloud-infra/main.tf --sarif-file-output=cloud-infra-snyk.sarif
+      - 
+        name: Upload result to GitHub Code Scanning
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: cloud-infra-snyk.sarif
+          category: cloud-infra
