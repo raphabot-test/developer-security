@@ -9,9 +9,6 @@ jobs:
   application-assessment:
     name: Application Assessment
     runs-on: ubuntu-22.04
-    defaults:
-      run:
-        working-directory: ./src
     steps:
       - 
         uses: actions/checkout@v3
@@ -20,7 +17,7 @@ jobs:
         uses: snyk/actions/node@master
         continue-on-error: true # To make sure that SARIF upload gets called
         with:
-          args: --sarif-file-output=snyk.sarif
+          args: ./src --sarif-file-output=snyk.sarif
       - 
         name: Upload result to GitHub Code Scanning
         uses: github/codeql-action/upload-sarif@v2
@@ -30,9 +27,6 @@ jobs:
   container-assessment:
     name: Container Assessment
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./src
     steps:
     - 
       uses: actions/checkout@v3
@@ -45,7 +39,7 @@ jobs:
       uses: snyk/actions/docker@master
       with:
         image: raphabot/hello:test
-        args: --file=Dockerfile
+        args: --file=/src/Dockerfile
     - 
       name: Upload result to GitHub Code Scanning
       uses: github/codeql-action/upload-sarif@v2
@@ -55,9 +49,6 @@ jobs:
   kubernetes-artifact-assessment:
     name: Kubernetes Artifact Assessment
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./kube
     steps:
       - 
         uses: actions/checkout@v3
@@ -67,6 +58,6 @@ jobs:
         uses: snyk/actions/iac@master # To make sure that SARIF upload gets called
       - 
         name: Upload result to GitHub Code Scanning
-        uses: github/github/codeql-action/upload-sarif@v2
+        uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: snyk-iac.sarif
