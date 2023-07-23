@@ -18,12 +18,12 @@ jobs:
         uses: snyk/actions/node@master
         continue-on-error: true # To make sure that SARIF upload gets called
         with:
-          args: ./src --sarif-file-output=snyk.sarif
+          args: ./src --sarif-file-output=oss-and-code-snyk.sarif
       - 
         name: Upload result to GitHub Code Scanning
         uses: github/codeql-action/upload-sarif@v2
         with:
-          sarif_file: snyk.sarif
+          sarif_file: oss-and-code-snyk.sarif
           category: oss-and-code
       
   container-assessment:
@@ -42,12 +42,12 @@ jobs:
       uses: snyk/actions/docker@master
       with:
         image: raphabot/hello:test
-        args: --file=/src/Dockerfile
+        args: --file=/src/Dockerfile --sarif-file-output=container-snyk.sarif
     - 
       name: Upload result to GitHub Code Scanning
       uses: github/codeql-action/upload-sarif@v2
       with:
-        sarif_file: snyk.sarif
+        sarif_file: container-snyk.sarif
         category: container
  
   kubernetes-artifact-assessment:
@@ -59,11 +59,13 @@ jobs:
         uses: actions/checkout@v3
       - 
         name: Run Snyk to check Kubernetes Artificat misconfigurations
-        continue-on-error: true
-        uses: snyk/actions/iac@master # To make sure that SARIF upload gets called
+        continue-on-error: true # To make sure that SARIF upload gets called
+        uses: snyk/actions/iac@master 
+        with:
+          args: ./kube --sarif-file-output=k8s-snyk.sarif
       - 
         name: Upload result to GitHub Code Scanning
         uses: github/codeql-action/upload-sarif@v2
         with:
-          sarif_file: snyk.sarif
+          sarif_file: k8s-snyk.sarif
           category: k8s-artificat
