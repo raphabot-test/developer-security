@@ -8,7 +8,10 @@ env:
 jobs:
   application-assessment:
     name: Application Assessment
-    runs-on: ubuntu-22.04  
+    runs-on: ubuntu-22.04
+    defaults:
+      run:
+        working-directory: ./src
     steps:
       - 
         uses: actions/checkout@v3
@@ -27,18 +30,21 @@ jobs:
   container-assessment:
     name: Container Assessment
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./src
     steps:
     - 
       uses: actions/checkout@v3
     - 
       name: Build the container image
-      run: docker build -t raphabot/hello:${{ env.GITHUB_SHA }} .
+      run: docker build -t raphabot/hello:test .
     - 
       name: Run Snyk to check container image for vulnerabilities
       continue-on-error: true # To make sure that SARIF upload gets called
       uses: snyk/actions/docker@master
       with:
-        image: raphabot/hello:${{ env.GITHUB_SHA }}
+        image: raphabot/hello:test
         args: --file=Dockerfile
     - 
       name: Upload result to GitHub Code Scanning
@@ -49,6 +55,9 @@ jobs:
   kubernetes-artifact-assessment:
     name: Kubernetes Artifact Assessment
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./kube
     steps:
       - 
         uses: actions/checkout@v3
@@ -58,6 +67,6 @@ jobs:
         uses: snyk/actions/iac@master # To make sure that SARIF upload gets called
       - 
         name: Upload result to GitHub Code Scanning
-        uses: github/codeql-action/upload-sarif@v2
+        uses: github/github/codeql-action/upload-sarif@v2
         with:
           sarif_file: snyk-iac.sarif
