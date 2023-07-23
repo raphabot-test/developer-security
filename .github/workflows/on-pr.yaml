@@ -23,7 +23,8 @@ jobs:
         name: Upload result to GitHub Code Scanning
         uses: github/codeql-action/upload-sarif@v2
         with:
-          sarif_file: snyk-oss.sarif
+          sarif_file: snyk.sarif
+          category: oss-and-code
       
   container-assessment:
     permissions: write-all
@@ -46,7 +47,8 @@ jobs:
       name: Upload result to GitHub Code Scanning
       uses: github/codeql-action/upload-sarif@v2
       with:
-        sarif_file: snyk-container.sarif
+        sarif_file: snyk.sarif
+        category: container
  
   kubernetes-artifact-assessment:
     permissions: write-all
@@ -63,4 +65,5 @@ jobs:
         name: Upload result to GitHub Code Scanning
         uses: github/codeql-action/upload-sarif@v2
         with:
-          sarif_file: snyk-iac.sarif
+          sarif_file: snyk.sarif
+          category: k8s-artificat
