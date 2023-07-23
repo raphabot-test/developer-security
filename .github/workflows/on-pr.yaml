@@ -1,6 +1,6 @@
 name: On Pull Request
 run-name: PR \#${{ github.event.number }}
-on: [pull_request]
+on: [pull_request, workflow_dispatch]
 
 env:
   SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
