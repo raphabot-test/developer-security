@@ -7,6 +7,7 @@ env:
 
 jobs:
   application-assessment:
+    permissions: write-all
     name: Application Assessment
     runs-on: ubuntu-22.04
     steps:
@@ -25,6 +26,7 @@ jobs:
           sarif_file: snyk-oss.sarif
       
   container-assessment:
+    permissions: write-all
     name: Container Assessment
     runs-on: ubuntu-latest
     steps:
@@ -32,7 +34,7 @@ jobs:
       uses: actions/checkout@v3
     - 
       name: Build the container image
-      run: docker build -t raphabot/hello:test .
+      run: docker build -t raphabot/hello:test src/
     - 
       name: Run Snyk to check container image for vulnerabilities
       continue-on-error: true # To make sure that SARIF upload gets called
@@ -47,6 +49,7 @@ jobs:
         sarif_file: snyk-container.sarif
  
   kubernetes-artifact-assessment:
+    permissions: write-all
     name: Kubernetes Artifact Assessment
     runs-on: ubuntu-latest
     steps:
