@@ -28,7 +28,7 @@ jobs:
       - 
         name: Login to Amazon ECR
         id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
+        uses: aws-actions/amazon-ecr-login@v1
       - 
         name: Build, tag, and push image to Amazon ECR
         env:
@@ -40,6 +40,7 @@ jobs:
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
   generate-sbom:
+    needs: container-build
     name: Generate Container SBOM
     runs-on: ubuntu-22.04
     steps:
@@ -55,6 +56,7 @@ jobs:
         run: echo "Not available in Free Tier."
 
   deploy:
+    needs: generate-sbom
     name: Redeploys the Pod using the latest image
     runs-on: ubuntu-22.04
     steps:
