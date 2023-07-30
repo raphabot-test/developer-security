@@ -1,5 +1,5 @@
-name: On Pull Request
-run-name: PR #${{ github.event.number }}
+name: On Main Merge
+run-name: On Main Merge
 on:
   push:
     branches:

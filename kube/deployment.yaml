@@ -29,11 +29,13 @@ spec:
     spec:
       containers:
       - name: hello
-        image: raphabot/hello:latest
+        image: 117000019572.dkr.ecr.us-east-1.amazonaws.com/hello:latest
+        imagePullPolicy: Always
         securityContext:
-          allowPrivilegeEscalation: false
+          # For AWS Fargate usage
+          # allowPrivilegeEscalation: true
+          # privileged: true
           runAsUser: 0
-          privileged: true
         ports:
         - containerPort: 8000
         env:
@@ -61,12 +63,20 @@ metadata:
   name: hello-service
   labels:
     app: hello
+  # For AWS Usage
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: external
+    service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: ip
+    service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing
 spec:
-  type: NodePort
+  # For AWS Usage
+  # type: NodePort
+  type: LoadBalancer
   selector:
     app: hello
   ports:
   - protocol: TCP
     port: 8000
     targetPort: 8000
-    nodePort: 30000
+    # For AWS Usage
+    # nodePort: 30000
