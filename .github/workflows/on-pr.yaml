@@ -60,11 +60,11 @@ jobs:
       run: docker build -t raphabot/hello:test src/
     - 
       name: Run Snyk to check container image for vulnerabilities
-      continue-on-error: true # To make sure that SARIF upload gets called
+      # continue-on-error: true # To make sure that SARIF upload gets called
       uses: snyk/actions/docker@master
       with:
         image: raphabot/hello:test
-        args: --file=src/Dockerfile
+        args: --severity-threshold=high --file=src/Dockerfile
     - 
       name: Upload result to GitHub Code Scanning
       uses: github/codeql-action/upload-sarif@v2
