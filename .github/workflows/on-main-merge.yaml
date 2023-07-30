@@ -1,0 +1,26 @@
+name: On Pull Request
+run-name: PR #${{ github.event.number }}
+on:
+  push:
+    branches:
+      - main
+
+env:
+  SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+jobs:
+  generate-sbom:
+    permissions: write-all
+    name: Generate SBOM
+    runs-on: ubuntu-22.04
+    steps:
+      - 
+        uses: actions/checkout@v3
+      -
+        uses: snyk/actions/setup@master
+      # - 
+      #   name: Run Snyk to generate SBOM
+      #   run: snyk sbom --format=cyclonedx1.4+json --json-file-output SBOM.json
+      -
+        name: Run Snyk to generate SBOM
+        run: echo "Not available in Free Tier."
