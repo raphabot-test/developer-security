@@ -62,12 +62,12 @@ jobs:
       uses: snyk/actions/docker@master
       with:
         image: raphabot/hello:test
-        args: --file=src/Dockerfile --sarif-file-output=container-snyk.sarif
+        args: --file=src/Dockerfile
     - 
       name: Upload result to GitHub Code Scanning
       uses: github/codeql-action/upload-sarif@v2
       with:
-        sarif_file: container-snyk.sarif
+        sarif_file: snyk.sarif
         category: container
  
   kubernetes-artifact-assessment:

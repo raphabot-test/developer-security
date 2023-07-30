@@ -30,6 +30,10 @@ spec:
       containers:
       - name: hello
         image: raphabot/hello:latest
+        securityContext:
+          allowPrivilegeEscalation: false
+          runAsUser: 0
+          privileged: true
         ports:
         - containerPort: 8000
         env:
