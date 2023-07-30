@@ -27,6 +27,7 @@ jobs:
           category: oss
   
   code-assessment:
+    needs: oss-assessment
     permissions: write-all
     name: SAST Assessment
     runs-on: ubuntu-22.04
@@ -47,6 +48,7 @@ jobs:
           category: code
       
   container-assessment:
+    needs: code-assessment
     permissions: write-all
     name: Container Assessment
     runs-on: ubuntu-latest
@@ -71,6 +73,7 @@ jobs:
         category: container
  
   kubernetes-artifact-assessment:
+    needs: container-assessment
     permissions: write-all
     name: Kubernetes Artifact Assessment
     runs-on: ubuntu-latest
@@ -91,6 +94,7 @@ jobs:
           category: k8s-artificat
   
   terraform-assessment:
+    needs: kubernetes-artifact-assessment
     permissions: write-all
     name: Terraform Assessment
     runs-on: ubuntu-latest
