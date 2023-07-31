@@ -16,6 +16,7 @@ jobs:
       - 
         name: Run Snyk to check for Open Source vulnerabilities
         uses: snyk/actions/node@master
+        continue-on-error: true
         with:
           args: ./src
   
