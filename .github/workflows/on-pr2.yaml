@@ -1,20 +1,14 @@
-name: On Main Merge
-run-name: On Main Merge
-on:
-  push:
-    branches:
-      - main
+name: On Pull Request
+run-name: PR #${{ github.event.number }}
+on: [pull_request, workflow_dispatch]
 
 env:
   SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-  ECR_REGISTRY: 117000019572.dkr.ecr.us-east-1.amazonaws.com
-  ECR_REPOSITORY: hello
-  IMAGE_TAG: latest
 
 jobs:
-  generate-oss-sarif:
+  oss-assessment:
     permissions: write-all
-    name: Generates Open Source vulnerabilities findings
+    name: Open Source Assessment
     runs-on: ubuntu-22.04
     steps:
       - 
@@ -32,10 +26,10 @@ jobs:
           sarif_file: oss-snyk.sarif
           category: oss
   
-  generate-code-sarif:
-    needs: generate-oss-sarif
+  code-assessment:
+    needs: oss-assessment
     permissions: write-all
-    name: Generates SAST vulnerabilities findings
+    name: SAST Assessment
     runs-on: ubuntu-22.04
     steps:
       - 
@@ -53,10 +47,10 @@ jobs:
           sarif_file: code-snyk.sarif
           category: code
       
-  generate-container-sarif:
-    needs: generate-code-sarif
+  container-assessment:
+    needs: code-assessment
     permissions: write-all
-    name: Generates Container vulnerabilities findings
+    name: Container Assessment
     runs-on: ubuntu-latest
     steps:
     - 
@@ -70,7 +64,7 @@ jobs:
       uses: snyk/actions/docker@master
       with:
         image: raphabot/hello:test
-        args: --file=src/Dockerfile
+        args: --severity-threshold=high --file=src/Dockerfile
     - 
       name: Upload result to GitHub Code Scanning
       uses: github/codeql-action/upload-sarif@v2
@@ -78,10 +72,10 @@ jobs:
         sarif_file: snyk.sarif
         category: container
  
-  generate-k8s-sarif:
-    needs: generate-container-sarif
+  kubernetes-artifact-assessment:
+    needs: container-assessment
     permissions: write-all
-    name: Generates Kubernetes misconfigurations findings
+    name: Kubernetes Artifact Assessment
     runs-on: ubuntu-latest
     steps:
       - 
@@ -99,10 +93,10 @@ jobs:
           sarif_file: k8s-snyk.sarif
           category: k8s-artificat
   
-  generate-terraform-sarif:
-    needs: generate-k8s-sarif
+  terraform-assessment:
+    needs: kubernetes-artifact-assessment
     permissions: write-all
-    name: Generates Terraform misconfiguration findings
+    name: Terraform Assessment
     runs-on: ubuntu-latest
     steps:
       - 
@@ -119,52 +113,3 @@ jobs:
         with:
           sarif_file: cloud-infra-snyk.sarif
           category: cloud-infra
-
-  generate-sbom:
-    needs: generate-terraform-sarif
-    name: Generates Container SBOM
-    runs-on: ubuntu-22.04
-    steps:
-      - 
-        uses: actions/checkout@v3
-      -
-        uses: snyk/actions/setup@master
-      # - 
-      #   name: Run Snyk to generate SBOM
-      #   run: snyk sbom --format=cyclonedx1.4+json --json-file-output SBOM.json
-      -
-        name: Run Snyk to generate SBOM
-        run: echo "Not available in Free Tier."
-
-  container-build:
-    needs: generate-sbom
-    name: Container Image Build and Push
-    runs-on: ubuntu-22.04
-    steps:
-      - 
-        uses: actions/checkout@v3
-      - 
-        name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-      - 
-        name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
-      - 
-        name: Build, tag, and push image to Amazon ECR
-        run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG src/
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-
-  deploy:
-    needs: container-build
-    name: Redeploys the Pod using the latest image
-    runs-on: ubuntu-22.04
-    steps:
-      -
-        name: Deployment
-        run: echo "To do."
