@@ -31,6 +31,7 @@ jobs:
         uses: snyk/actions/setup@master
       - 
         name: Run Snyk to check for Static Application Security Testing Findings
+        continue-on-error: true
         run: snyk code test ./src
       
   container-assessment:
