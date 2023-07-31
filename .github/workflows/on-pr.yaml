@@ -16,6 +16,8 @@ jobs:
       - 
         name: Run Snyk to check for Open Source vulnerabilities
         uses: snyk/actions/node@master
+        with:
+          args: ./src
   
   code-assessment:
     needs: oss-assessment
