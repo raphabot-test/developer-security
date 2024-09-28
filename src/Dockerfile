@@ -1,4 +1,4 @@
-FROM node:20.3.0-bookworm
+FROM node:20.17.0-bookworm
 
 COPY . /home/node/app
 WORKDIR /home/node/app
